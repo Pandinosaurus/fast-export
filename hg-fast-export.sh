@@ -29,7 +29,7 @@ GFI_OPTS=""
 
 if [ -z "${PYTHON}" ]; then
     # $PYTHON is not set, so we try to find a working python with mercurial:
-    for python_cmd in python2 python python3; do
+    for python_cmd in python3 python; do
         if command -v $python_cmd > /dev/null; then
             $python_cmd -c 'from mercurial.scmutil import revsymbol' 2> /dev/null
             if [ $? -eq 0 ]; then
@@ -41,6 +41,14 @@ if [ -z "${PYTHON}" ]; then
 fi
 if [ -z "${PYTHON}" ]; then
     echo "Could not find a python interpreter with the mercurial module >= 4.6 available. " \
+        "Please use the 'PYTHON' environment variable to specify the interpreter to use."
+    exit 1
+fi
+
+"${PYTHON}" -c 'import sys; exit(sys.version_info.major==3 and sys.version_info.minor >= 7)'
+
+if [ $? -eq 0 ]; then
+    echo "Could not find an interpreter for a supported Python version (>= 3.7)" \
         "Please use the 'PYTHON' environment variable to specify the interpreter to use."
     exit 1
 fi
@@ -85,6 +93,14 @@ case "$1" in
       echo "usage: $(basename "$0") $USAGE"
       echo ""
       echo "$LONG_USAGE"
+      exit 0
+      ;;
+
+    --debug)
+      echo -n "Using Python: "
+      "${PYTHON}" --version
+      echo -n "Using Mercurial: "
+      hg --version
       exit 0
 esac
 
